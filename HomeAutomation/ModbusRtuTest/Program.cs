@@ -7,13 +7,29 @@ port.BaudRate = 9600;
 port.Parity = Parity.None;
 port.DataBits = 8;
 port.StopBits = StopBits.One;
-port.ReadTimeout = 1000;
+port.ReadTimeout = 10000;
 port.WriteTimeout = 1000;
 port.Open();
 
 var master = new ModbusFactory().CreateRtuMaster(port);
 
-master.WriteMultipleRegisters(
+var result = await master.ReadHoldingRegistersAsync(
     slaveAddress: 1,
-    startAddress: 100,
-    data: [1, 2, 3]);
+    startAddress: 0,
+    numberOfPoints: 2);
+
+if (result[0] == 0x7FFF || result[1] == 0x7FFF43)
+{
+    Console.WriteLine("Sensor is abnormal (invalid reading)");
+    return;
+}
+
+var temperatureRaw = unchecked((short)result[0]);
+var relativeHumidityRaw = unchecked((short)result[1]);
+            
+var temperature = temperatureRaw * 0.1;
+var relativeHumidity = relativeHumidityRaw * 0.1;
+
+Console.WriteLine($"Temperature: {temperature:0.0}°C");
+Console.WriteLine($"Relative Humidity: {relativeHumidity:0.0}%");
+    
