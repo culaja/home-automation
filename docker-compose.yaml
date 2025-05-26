@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  ignition:
+    image: inductiveautomation/ignition:latest
+    container_name: ignition
+    environment:
+      - ACCEPT_IGNITION_EULA=Y
+      - IGNITION_EDITION=standard  # or "gateway" for Gateway edition
+      - IGNITION_ADMIN_PASSWORD=yourpassword  # Change this!
+      - IGNITION_GUID=your-unique-id  # Optional but recommended
+      - TZ=America/New_York  # Set your timezone
+    ports:
+      - "8088:8088"  # Web UI
+      - "8043:8043"  # HTTPS Web UI
+      - "8008:8008"  # Legacy port
+      - "8060:8060"  # Gateway Network
+      - "8080:8080"  # Additional web port
+      - "53595:53595"  # Zeroconf
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"  # Map host serial port to container
+    volumes:
+      - ./ignition_data:/var/lib/ignition  # Persistent storage
+      - ./ignition_backups:/usr/local/bin/ignition/backups  # Backup directory
+    restart: unless-stopped
+
